@@ -1,26 +1,50 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import { BedsService } from './beds.service';
 import { CreateBedDto } from './dto/create-bed.dto';
 import { UpdateBedDto } from './dto/update-bed.dto';
+import { BedsGateway } from './beds.gateway';
+import { BedsAdminGateway } from './beds-admin.gateway';
+import { CreateBedPayloadPipe } from './pipes/create-bed-payload.pipe';
 
 @Controller('beds')
 export class BedsController {
-  constructor(private readonly bedsService: BedsService) {}
+  constructor(
+    private bedsAdminGateway: BedsAdminGateway,
+    private bedsGateway: BedsGateway,
+    private bedsService: BedsService,
+  ) {
+    this.bedsGateway.bedRequestSub.asObservable().subscribe({
+      next: ({ client, bedNo }) => {
+        if (client) {
+          this.bedsAdminGateway.sendBedRequstToAdminPortal(client.id, bedNo);
+        }
+      },
+    });
+
+    // admin accept bed no
+    this.bedsAdminGateway.bedNoAcceptedSub.asObservable().subscribe({
+      next: ({ adminClient, clientId, bedNo }) => {
+        if (adminClient) {
+          this.bedsGateway.notifyClientBedNoAccepted(clientId, bedNo);
+        }
+      },
+    });
+  }
 
   @Post()
-  create(@Body() createBedDto: CreateBedDto) {
+  create(@Body(CreateBedPayloadPipe) createBedDto: CreateBedDto) {
     return this.bedsService.create(createBedDto);
   }
 
-  @Get('all')
+  @Get()
   findAll() {
     return this.bedsService.findAll();
   }

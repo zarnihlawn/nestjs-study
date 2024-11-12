@@ -11,10 +11,34 @@ import { WardsService } from './wards.service';
 import { CreateWardDto } from './dto/create-ward.dto';
 import { UpdateWardDto } from './dto/update-ward.dto';
 import { CreateWardPayloadPipe } from './pipes/create-ward-payload.pipe';
+import { WardsGateway } from './wards.gateway';
+import { WardsAdminGateway } from './ward-admin.gateway';
 
 @Controller('wards')
 export class WardsController {
-  constructor(private readonly wardsService: WardsService) {}
+  constructor(
+    private readonly wardsService: WardsService,
+    private wardsGateway: WardsGateway,
+    private wardsAdminGateway: WardsAdminGateway,
+  ) {
+    this.wardsGateway.wardRequestSub.asObservable().subscribe({
+      next: ({ client, wardNo }) => {
+        if (client) {
+          this.wardsAdminGateway.sendWardRequestToAdminPortal(
+            client.id,
+            wardNo,
+          );
+        }
+      },
+    });
+    this.wardsAdminGateway.wardNoAcceptedSub.asObservable().subscribe({
+      next: ({ adminClient, clientId, wardNo }) => {
+        if (adminClient) {
+          this.wardsGateway.notifyClientWardNoAccepted(clientId, wardNo);
+        }
+      },
+    });
+  }
 
   @Post()
   create(@Body(CreateWardPayloadPipe) createWardDto: CreateWardDto) {

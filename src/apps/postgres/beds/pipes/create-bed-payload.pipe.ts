@@ -5,20 +5,19 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { AjvService } from 'src/services/global/ajv/ajv.service';
-import { ajvCreateWardPayloadSchema } from '../schema/create-ward-payload.schema';
+import { ajvBedPayloadSchema } from '../schema/create-bed-payload.schema';
 
 @Injectable()
-export class CreateWardPayloadPipe implements PipeTransform {
+export class CreateBedPayloadPipe implements PipeTransform {
   constructor(private ajvService: AjvService) {}
+
   transform(value: any, metadata: ArgumentMetadata) {
-    const validator = this.ajvService.buildValidator(
-      ajvCreateWardPayloadSchema,
-    );
+    const validator = this.ajvService.buildValidator(ajvBedPayloadSchema);
 
     if (validator(value)) {
       return value;
     } else {
-      throw new NotAcceptableException(`Invalid payload`);
+      throw new NotAcceptableException(validator.errors);
     }
   }
 }
