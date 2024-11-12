@@ -5,9 +5,9 @@ import { Column, Entity } from 'typeorm';
 @Entity()
 export class Ward extends AbstractEntity<Ward> {
   @Column({ unique: true })
-  name: string;
+  wardName: string;
 
-  @Column()
+  @Column({ nullable: true })
   location: string;
 
   @Column({ default: YesNoEnum.Yes })
