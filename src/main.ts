@@ -1,11 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
+import {} from 'process';
+import { SocketIoAdapter } from './services/global/socket-io/socket-io.adapter';
+import { Logger } from '@nestjs/common';
 
-const port = 3000;
+const port = 4000;
+const logger = new Logger();
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: logger,
+  });
 
   app.use(
     helmet({
@@ -18,10 +24,14 @@ async function bootstrap() {
     credentials: true,
   });
 
+  const redisAdapter = new SocketIoAdapter(app);
+  redisAdapter.setLogger(logger);
+  app.useWebSocketAdapter(redisAdapter);
+
   await app.listen(port, () => {
     console.log(`
-    ⚡️ Nest Application is running!
-    ⚡️ Open http://localhost:${port}/ in your browser.
+    Server is running on port: ${port}
+    Current Process ID: ${process.pid}
     `);
   });
 }
