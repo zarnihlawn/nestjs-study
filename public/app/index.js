@@ -41,3 +41,5 @@ wardRequestButton.onclick = () => {
     alert('Socket is not connected');
   }
 };
+
+console.log(btoa('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0cCI6MCwidWlkIjoxLCJpcCI6Ijo6MSIsImlhdCI6MzB9.rqIs6WMppV5FtmfkMQpdw1SPdkq5WNralCnDMLd0aLE'))

@@ -17,6 +17,20 @@ import { postgresDatabaseConfig } from './services/individual/databases/postgres
 import { PostgresDatabaseModule } from './services/individual/databases/postgres-database/postgres-database.module';
 import { secondaryDatabaseConfig } from './services/individual/databases/secondary-database/secondary-database.config';
 import { SecondaryDatabaseModule } from './services/individual/databases/secondary-database/secondary-database.module';
+import { AuthModule } from './apps/postgres/auth/auth.module';
+import { CryptoJsModule } from './services/individual/crypto/crypto-js.module';
+import { TokenModule } from './services/global/token/token.module';
+import { APP_GUARD } from '@nestjs/core';
+import { User } from './apps/main/users/entities/user.entity';
+import { TokenGuard } from './guards/token/token.guard';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: User | null;
+    }
+  }
+}
 
 @Module({
   imports: [
@@ -39,9 +53,12 @@ import { SecondaryDatabaseModule } from './services/individual/databases/seconda
     TitlesModule,
     UsersModule,
     WardsModule,
+    AuthModule,
+    CryptoJsModule,
+    TokenModule
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: TokenGuard }],
 })
 export class AppModule {}
